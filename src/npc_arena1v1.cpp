@@ -401,32 +401,15 @@ private:
         if (!player)
             return false;
 
-        if (sConfigMgr->GetOption<bool>("Arena1v1.BlockForbiddenTalents", true) == false)
-            return true;
-
-        uint32 count = 0;
-
-        for (uint32 talentId = 0; talentId < sTalentStore.GetNumRows(); ++talentId)
+        if (player->HasHealSpec() && (sConfigMgr->GetOption<bool>("Arena1v1.PreventHealingTalents", false)))
         {
-            TalentEntry const* talentInfo = sTalentStore.LookupEntry(talentId);
-
-            if (!talentInfo)
-                continue;
-
-            if (std::find(forbiddenTalents.begin(), forbiddenTalents.end(), talentInfo->TalentID) != forbiddenTalents.end())
-            {
-                ChatHandler(player->GetSession()).SendSysMessage("你不能加入，因为你使用被禁止的天赋。");
-                return false;
-            }
-
-            for (int8 rank = MAX_TALENT_RANK - 1; rank >= 0; --rank)
-                if (talentInfo->RankID[rank] == 0)
-                    continue;
+            ChatHandler(player->GetSession()).SendSysMessage("你不能加入，因为你使用禁用天赋（治疗）");
+            return false;
         }
 
-        if (count >= 36)
+        if (player->HasTankSpec() && (sConfigMgr->GetOption<bool>("Arena1v1.PreventTankTalents", false)))
         {
-            ChatHandler(player->GetSession()).SendSysMessage("你不能加入，因为你在被禁用的天赋树上有太多天赋点。（治疗/坦克）");
+            ChatHandler(player->GetSession()).SendSysMessage("你不能加入，因为你使用禁用天赋（坦克）");
             return false;
         }
 
